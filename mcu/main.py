@@ -140,8 +140,6 @@ while True:
                 
                 client.publish(mqtt_logs, "Cartao " + cardTag + " adicionado na memoria!")
                 
-                
-                
                 db.addCard(cardTag, input("Nome do holder "))
                 
                 time.sleep_ms(3000)
@@ -154,7 +152,7 @@ while True:
             
             print("Modo configuracao ativado")
             
-            client.publish(mqtt_logs, "Modo de configuracao habilitado!")
+            client.publish(mqtt_logs, "O modo de configuracao da porta foi habilitado!")
             
             time.sleep_ms(2000)
             
@@ -162,13 +160,13 @@ while True:
             
             print("Cartoes na memoria", amount, "!")
             
-            client.publish(mqtt_logs, "Cartoes que estao adicionados na memoria: " + str(amount) + "!")
+            client.publish(mqtt_logs, "Atualmente ha " + str(amount) + " cartoes registrados na memoria!")
             
             time.sleep_ms(1000)
             
-            print("Modo de ADICIONAR ou REMOVER habilitado")
+            print("Leia um cartao para ADICIONAR ou REMOVER da memoria")
             
-            client.publish(mqtt_logs, "Leia um cartao para ADICIONAR ou REMOVER da memoria")
+            client.publish(mqtt_logs, "A porta esta solicitando um cartao para ser ADICIONADO ou REMOVIDO")
             
         else:
             if db.findCard(cardTag)[0]:
