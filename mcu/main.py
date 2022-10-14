@@ -35,9 +35,44 @@ if not wlan.isconnected():
 mqtt_logs = "door/logs"
 mqtt_heartbeat = "door/heartbeat"
 mqtt_nomes = "door/nomes"
-    
+mqtt_comandos = "door/comandos"
+
 client = MQTTClient(mqtt_client, mqtt_address)
-client.connect()
+
+def sub_cb(topic, msg):
+
+    if topic == mqtt_comandos and msg == b'restart':
+        print("Comando de restart recebido")
+
+        time.sleep(20)
+
+        machine.reset()
+    
+    if topic == mqtt_comandos and msg == b'keepalive':
+        print("Comando de keep alive recebido")
+
+        client.publish(mqtt_heartbeat, "Heartbeat: {}".format(time.time()))
+    
+    if topic == mqtt_comandos and msg == b'abrir':
+        print("Comando de abrir porta recebido")
+
+        rele.value(1)
+
+        time.sleep_ms(3000)
+    
+    if topic == mqtt_comandos and msg == b'fechar':
+        print("Comando de fechar porta recebido")
+
+        rele.value(0)
+
+try:
+    client.connect()
+    client.set_callback(sub_cb)
+    client.subscribe(mqtt_comandos)
+except OSError as e:
+    time.sleep(10)
+
+    machine.reset()
 
 client.publish(mqtt_logs, "Porta conectada em " + ssid + " com sucesso, servidor MQTT estabelecido!")
 
@@ -45,7 +80,7 @@ client.publish(mqtt_logs, "Porta conectada em " + ssid + " com sucesso, servidor
 
 rele = Pin(2, Pin.OUT)
 
-# Definindo #
+# Funções respectivas + inicializando objetos #
 
 db = db()
 rf = rf()
@@ -65,20 +100,14 @@ def deny(tag):
     
     time.sleep(3)
 
-def current_milli_time():
-    return round(time.time() * 1000)
-    
 while True:
-    
-    client.check_msg()
-    
+
     cardTag = str(rf.get())
     
-    client.publish(mqtt_logs, "A porta foi fechada com sucesso")
-    
+    client.publish(mqtt_logs, "A porta foi fechada com sucesso!")
+    client.publish(mqtt_heartbeat, "Heartbeat: {}".format(time.time()))
+
     while (cardTag == "SemTag"):
-        
-        client.publish(mqtt_heartbeat, "Heartbeat: {}".format(current_milli_time()))
         
         rele.value(0)
             
