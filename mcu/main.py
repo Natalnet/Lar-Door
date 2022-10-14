@@ -59,6 +59,8 @@ def sub_cb(topic, msg):
         rele.value(1)
 
         time.sleep_ms(3000)
+
+        rele.value(0)
     
     if topic == mqtt_comandos and msg == b'fechar':
         print("Comando de fechar porta recebido")
