@@ -35,7 +35,7 @@ if not wlan.isconnected():
 mqtt_logs = "door/logs"
 mqtt_heartbeat = "door/heartbeat"
 mqtt_nomes = "door/nomes"
-mqtt_comandos = "door/comandos"
+mqtt_comandos = b"door/comandos"
 
 client = MQTTClient(mqtt_client, mqtt_address)
 
@@ -77,6 +77,8 @@ except OSError as e:
     machine.reset()
 
 client.publish(mqtt_logs, "Porta conectada em " + ssid + " com sucesso, servidor MQTT estabelecido!")
+
+print("Porta conectada com sucesso ;)")
 
 # Rele #
 
