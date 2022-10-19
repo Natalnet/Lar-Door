@@ -38,6 +38,8 @@ mqtt_nomes = "door/nomes"
 
 # Tópico do MQTT #
 
+topics = [b"door/comandos", b"door/cadastro"]
+
 mqtt_comandos = b"door/comandos"
 mqtt_cadastro = b"door/cadastro"
 
@@ -74,12 +76,12 @@ def sub_cb(topic, msg):
     if topic == mqtt_cadastro and msg == b'cadastro':
         print("Comando de requisicao de cadastro recebido")
 
-        confiMode = True
+        configMode = True
 
 try:
     client.connect()
     client.set_callback(sub_cb)
-    client.subscribe(mqtt_comandos)
+    client.subscribe(topics)
 except OSError as e:
     time.sleep(10)
 
