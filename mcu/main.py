@@ -35,7 +35,11 @@ if not wlan.isconnected():
 mqtt_logs = "door/logs"
 mqtt_heartbeat = "door/heartbeat"
 mqtt_nomes = "door/nomes"
+
+# Tópico do MQTT #
+
 mqtt_comandos = b"door/comandos"
+mqtt_cadastro = b"door/cadastro"
 
 client = MQTTClient(mqtt_client, mqtt_address)
 
@@ -66,6 +70,11 @@ def sub_cb(topic, msg):
         print("Comando de fechar porta recebido")
 
         rele.value(0)
+    
+    if topic == mqtt_cadastro and msg == b'cadastro':
+        print("Comando de requisicao de cadastro recebido")
+
+        confiMode = True
 
 try:
     client.connect()
