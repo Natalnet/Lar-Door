@@ -3,8 +3,6 @@ from porteiro import RFiDPorteiro as rf
 import ujson
 import time
 
-rf = rf()
-
 class Database:
 
 
@@ -50,6 +48,23 @@ class Database:
                 return (True,i)
             
         return (False,i)
+    
+    def findName(self, tag):
+
+        arq = open("ID.json").read()
+        arqload = ujson.loads(arq)
+        amount = int(len(arqload))
+
+        findTag = tag
+
+        for i in range (amount):
+
+            if arqload[i]["ID"] == findTag:
+                name = arqload[i]["NOME"]
+
+                return name
+            
+            return "SemTag"
     
     def addCard(self, tag, nome):
         if self.findCard(tag)[0] == False:
