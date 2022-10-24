@@ -32,10 +32,6 @@ mqtt_logs = "door/logs"
 mqtt_heartbeat = "door/heartbeat"
 mqtt_nomes = "door/nomes"
 
-# Tópico do MQTT #
-
-topics = [b"door/comandos", b"door/cadastro"]
-
 mqtt_comandos = b"door/comandos"
 mqtt_cadastro = b"door/cadastro"
 
@@ -78,6 +74,7 @@ try:
     client.connect()
     client.set_callback(sub_cb)
     client.subscribe(topics)
+
 except OSError as e:
     time.sleep(10)
 
@@ -85,27 +82,23 @@ except OSError as e:
 
 client.publish(mqtt_logs, "Porta conectada em " + ssid + " com sucesso, servidor MQTT estabelecido!")
 
-# Rele #
-
 rele = Pin(2, Pin.OUT)
-
-# Definindo #
 
 db = db()
 rf = rf()
 
-def grant(delay, tag):
+def grant(delay, name):
     
     rele.value(1)
     
-    client.publish(mqtt_logs, "A porta foi aberta por " + tag + " com sucesso")
+    client.publish(mqtt_nomes, "A porta foi aberta por " + name + " com sucesso.")
     
     time.sleep(delay)
 
 def deny(tag):
     rele.value(0)
     
-    client.publish(mqtt_logs, "O cartao de ID " + tag + " tentou entrar porem sem permissao")
+    client.publish(mqtt_logs, "O cartao de ID " + tag + " tentou entrar porem sem permissao.")
     
     time.sleep(3)
 
@@ -179,7 +172,9 @@ while True:
             
         else:
             if db.findCard(cardTag)[0]:
-                grant(3, cardTag)
+                name = db.findName(cardTag)
+                
+                grant(3, name)
             else:
                 deny(cardTag)
     
