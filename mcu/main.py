@@ -31,13 +31,65 @@ if not wlan.isconnected():
 mqtt_logs = "door/logs"
 mqtt_heartbeat = "door/heartbeat"
 mqtt_nomes = "door/nomes"
-    
+
+# Tópico do MQTT #
+
+topics = [b"door/comandos", b"door/cadastro"]
+
+mqtt_comandos = b"door/comandos"
+mqtt_cadastro = b"door/cadastro"
+
 client = MQTTClient(mqtt_client, mqtt_address)
-client.connect()
+
+def sub_cb(topic, msg):
+
+    if topic == mqtt_comandos and msg == b'restart':
+        print("Comando de restart recebido")
+
+        time.sleep(20)
+
+        machine.reset()
+    
+    if topic == mqtt_comandos and msg == b'keepalive':
+        print("Comando de keep alive recebido")
+
+        client.publish(mqtt_heartbeat, "Heartbeat: {}".format(time.time()))
+    
+    if topic == mqtt_comandos and msg == b'abrir':
+        print("Comando de abrir porta recebido")
+
+        rele.value(1)
+
+        time.sleep_ms(3000)
+
+        rele.value(0)
+    
+    if topic == mqtt_comandos and msg == b'fechar':
+        print("Comando de fechar porta recebido")
+
+        rele.value(0)
+    
+    if topic == mqtt_cadastro and msg == b'cadastro':
+        print("Comando de requisicao de cadastro recebido")
+
+        configMode = True
+
+try:
+    client.connect()
+    client.set_callback(sub_cb)
+    client.subscribe(topics)
+except OSError as e:
+    time.sleep(10)
+
+    machine.reset()
 
 client.publish(mqtt_logs, "Porta conectada em " + ssid + " com sucesso, servidor MQTT estabelecido!")
 
+# Rele #
+
 rele = Pin(2, Pin.OUT)
+
+# Definindo #
 
 db = db()
 rf = rf()
@@ -57,20 +109,14 @@ def deny(tag):
     
     time.sleep(3)
 
-def current_milli_time():
-    return round(time.time() * 1000)
-    
 while True:
-    
-    client.check_msg()
-    
+
     cardTag = str(rf.get())
     
-    client.publish(mqtt_logs, "A porta foi fechada com sucesso")
-    
+    client.publish(mqtt_logs, "A porta foi fechada com sucesso!")
+    client.publish(mqtt_heartbeat, "Heartbeat: {}".format(time.time()))
+
     while (cardTag == "SemTag"):
-        
-        client.publish(mqtt_heartbeat, "Heartbeat: {}".format(current_milli_time()))
         
         rele.value(0)
             
@@ -103,8 +149,6 @@ while True:
                 
                 client.publish(mqtt_logs, "Cartao " + cardTag + " adicionado na memoria!")
                 
-                
-                
                 db.addCard(cardTag, input("Nome do holder "))
                 
                 time.sleep_ms(3000)
@@ -117,7 +161,7 @@ while True:
             
             print("Modo configuracao ativado")
             
-            client.publish(mqtt_logs, "Modo de configuracao habilitado!")
+            client.publish(mqtt_logs, "O modo de configuracao da porta foi habilitado!")
             
             time.sleep_ms(2000)
             
@@ -125,13 +169,13 @@ while True:
             
             print("Cartoes na memoria", amount, "!")
             
-            client.publish(mqtt_logs, "Cartoes que estao adicionados na memoria: " + str(amount) + "!")
+            client.publish(mqtt_logs, "Atualmente ha " + str(amount) + " cartoes registrados na memoria!")
             
             time.sleep_ms(1000)
             
-            print("Modo de ADICIONAR ou REMOVER habilitado")
+            print("Leia um cartao para ADICIONAR ou REMOVER da memoria")
             
-            client.publish(mqtt_logs, "Leia um cartao para ADICIONAR ou REMOVER da memoria")
+            client.publish(mqtt_logs, "A porta esta solicitando um cartao para ser ADICIONADO ou REMOVIDO")
             
         else:
             if db.findCard(cardTag)[0]:
