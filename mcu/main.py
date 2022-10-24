@@ -8,8 +8,6 @@ from umqttsimple import MQTTClient
 import time
 import network
 
-# Wifi #
-
 configMode = False
 
 ssid = "SSID_DA_REDE"
@@ -29,8 +27,6 @@ if not wlan.isconnected():
         pass
     
     print('Rede:', wlan.ifconfig())
-    
-# MQTT #
 
 mqtt_logs = "door/logs"
 mqtt_heartbeat = "door/heartbeat"
@@ -41,11 +37,7 @@ client.connect()
 
 client.publish(mqtt_logs, "Porta conectada em " + ssid + " com sucesso, servidor MQTT estabelecido!")
 
-# Rele #
-
 rele = Pin(2, Pin.OUT)
-
-# Definindo #
 
 db = db()
 rf = rf()
