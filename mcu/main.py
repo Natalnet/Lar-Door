@@ -31,9 +31,9 @@ if not wlan.isconnected():
 mqtt_logs = "door/logs"
 mqtt_heartbeat = "door/heartbeat"
 mqtt_nomes = "door/nomes"
+mqtt_estado = "door/estado"
 
 mqtt_comandos = b"door/comandos"
-mqtt_cadastro = b"door/cadastro"
 
 client = MQTTClient(mqtt_client, mqtt_address)
 
@@ -42,6 +42,8 @@ def sub_cb(topic, msg):
     if topic == mqtt_comandos and msg == b'restart':
         print("Comando de restart recebido")
 
+        client.publish(mqtt_logs, "Comando de restart recebido, reiniciando o ESP.")
+
         time.sleep(20)
 
         machine.reset()
@@ -49,31 +51,32 @@ def sub_cb(topic, msg):
     if topic == mqtt_comandos and msg == b'keepalive':
         print("Comando de keep alive recebido")
 
+        client.publish(mqtt_logs, "Comando de keep alive recebido, enviando ultimo heartbeat.")
+
         client.publish(mqtt_heartbeat, "Heartbeat: {}".format(time.time()))
     
     if topic == mqtt_comandos and msg == b'abrir':
         print("Comando de abrir porta recebido")
 
+        client.publish(mqtt_logs, "Comando de abrir porta recebido, porta foi aberta")
+
+        client.publish(mqtt_estado, "Porta aberta com sucesso.")
+
         rele.value(1)
 
-        time.sleep_ms(3000)
-
-        rele.value(0)
-    
     if topic == mqtt_comandos and msg == b'fechar':
         print("Comando de fechar porta recebido")
 
+        client.publish(mqtt_logs, "Comando de fechar porta recebido, porta foi fechada")
+
+        client.publish(mqtt_estado, "Porta fechada com sucesso.")
+
         rele.value(0)
     
-    if topic == mqtt_cadastro and msg == b'cadastro':
-        print("Comando de requisicao de cadastro recebido")
-
-        configMode = True
-
 try:
     client.connect()
     client.set_callback(sub_cb)
-    client.subscribe(topics)
+    client.subscribe(mqtt_comandos)
 
 except OSError as e:
     time.sleep(10)
@@ -106,8 +109,7 @@ while True:
 
     cardTag = str(rf.get())
     
-    client.publish(mqtt_logs, "A porta foi fechada com sucesso!")
-    client.publish(mqtt_heartbeat, "Heartbeat: {}".format(time.time()))
+    client.publish(mqtt_estado, "Porta fechada com sucesso")
 
     while (cardTag == "SemTag"):
         
