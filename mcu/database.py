@@ -44,7 +44,7 @@ class Database:
         
         for i in range (amount):
             
-            if arqload[i]["ID"] == findTag :
+            if arqload[i]["ID"] == findTag:
                 return (True,i)
             
         return (False,i)
@@ -61,10 +61,10 @@ class Database:
 
             if arqload[i]["ID"] == findTag:
                 name = arqload[i]["NOME"]
-
+                
                 return name
-            
-            return "SemTag"
+
+        return "SemTag"
     
     def addCard(self, tag, nome):
         if self.findCard(tag)[0] == False:
