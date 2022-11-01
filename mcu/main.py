@@ -28,10 +28,10 @@ if not wlan.isconnected():
     
     print('Rede:', wlan.ifconfig())
 
-mqtt_logs = "door/logs"
-mqtt_heartbeat = "door/heartbeat"
-mqtt_nomes = "door/nomes"
-mqtt_estado = "door/estado"
+mqtt_logs = b"door/logs"
+mqtt_heartbeat = b"door/heartbeat"
+mqtt_nomes = b"door/nomes"
+mqtt_estado = b"door/estado"
 
 mqtt_comandos = b"door/comandos"
 
@@ -109,9 +109,11 @@ while True:
 
     cardTag = str(rf.get())
     
-    client.publish(mqtt_estado, "Porta fechada com sucesso")
+    client.publish(mqtt_estado, "Porta fechada com sucesso.")
 
     while (cardTag == "SemTag"):
+
+        client.check_msg()
         
         rele.value(0)
             
@@ -136,7 +138,7 @@ while True:
                 
                 time.sleep_ms(3000)
                 
-                print("Aproxime um cartao para adicionar ou remover")
+                print("Aproxime um cartao para adicionar ou remover.")
                 
             else:
                 
@@ -148,13 +150,13 @@ while True:
                 
                 time.sleep_ms(3000)
                 
-                print("Aproxime um cartao para adicionar ou remover")
+                print("Aproxime um cartao para adicionar ou remover.")
     else:
         
         if db.IsMaster(cardTag):
             configMode = True
             
-            print("Modo configuracao ativado")
+            print("Modo configuracao ativado.")
             
             client.publish(mqtt_logs, "O modo de configuracao da porta foi habilitado!")
             
