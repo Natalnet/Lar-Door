@@ -66,6 +66,10 @@ def sub_cb(topic, msg):
 
         rele.value(1)
 
+        time.sleep(3)
+
+        rele.value(0)
+
     if topic == topic_sub and msg == b'fechar':
         print("Comando de fechar porta recebido")
 
