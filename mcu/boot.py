@@ -1,5 +1,6 @@
 import gc
 import ujson
+import json
 import esp
 import ubinascii
 import machine
@@ -10,14 +11,16 @@ from umqttsimple import MQTTClient
 esp.osdebug(None)
 gc.collect()
 
-config = open("config.json").read()
+config = open("config.json")
+load_config = json.load(config)
+config.close()
 
-ssid = config["ssid"]
-ssid_password = config["ssid_password"]
-mqtt_address = config["mqtt_address"]
-mqtt_port = config["mqtt_port"]
-mqtt_user = config["mqtt_user"]
-mqtt_password = config["mqtt_password"]
+ssid = load_config["ssid"]
+ssid_password = load_config["ssid_password"]
+mqtt_address = load_config["mqtt_address"]
+mqtt_port = load_config["mqtt_port"]
+mqtt_user = load_config["mqtt_user"]
+mqtt_password = load_config["mqtt_password"]
 
 client_id = ubinascii.hexlify(machine.unique_id())
 
