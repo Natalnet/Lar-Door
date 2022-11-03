@@ -6,40 +6,42 @@ from machine import Pin
 from umqttsimple import MQTTClient
 
 import time
-import network
 
 configMode = False
 
-ssid = "SSID_DA_REDE"
-ssid_pw = "SENHA_DA_REDE"
-
-mqtt_client = "Door"
-mqtt_address = "MQTT_ADDRESS"
-
-wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
-
-if not wlan.isconnected():
-    print("Conectando com o WIFI...")
-    wlan.connect(ssid, ssid_pw)
-    
-    while not wlan.isconnected():
-        pass
-    
-    print('Rede:', wlan.ifconfig())
+global_contador = 0
 
 mqtt_logs = b"door/logs"
 mqtt_heartbeat = b"door/heartbeat"
 mqtt_nomes = b"door/nomes"
 mqtt_estado = b"door/estado"
 
-mqtt_comandos = b"door/comandos"
+def connect_and_subscribe():
+    global mqtt_client, mqtt_address, mqtt_port, topic_sub, ssid
 
-client = MQTTClient(mqtt_client, mqtt_address)
+    client = MQTTClient(mqtt_client, mqtt_address, mqtt_port)
+
+    client.set_callback(sub_cb)
+    client.connect()
+    client.subscribe(topic_sub)
+
+    client.publish(mqtt_logs, "Conectado do MQTT de IP " + mqtt_address + " com sucesso!")
+
+    print("Conectado ao MQTT Broker de IP %s, lendo os topicos %s" % (mqtt_address, topic_sub))
+
+    return client
+
+def restart_and_reconnect():
+    print("Ocorreu um erro ao se conectar com o broker, tentando reconexao.")
+
+    time.sleep(10)
+
+    machine.reset()
 
 def sub_cb(topic, msg):
+    global topic_sub
 
-    if topic == mqtt_comandos and msg == b'restart':
+    if topic == topic_sub and msg == b'restart':
         print("Comando de restart recebido")
 
         client.publish(mqtt_logs, "Comando de restart recebido, reiniciando o ESP.")
@@ -48,14 +50,14 @@ def sub_cb(topic, msg):
 
         machine.reset()
     
-    if topic == mqtt_comandos and msg == b'keepalive':
+    if topic == topic_sub and msg == b'keepalive':
         print("Comando de keep alive recebido")
 
         client.publish(mqtt_logs, "Comando de keep alive recebido, enviando ultimo heartbeat.")
 
         client.publish(mqtt_heartbeat, "Heartbeat: {}".format(time.time()))
     
-    if topic == mqtt_comandos and msg == b'abrir':
+    if topic == topic_sub and msg == b'abrir':
         print("Comando de abrir porta recebido")
 
         client.publish(mqtt_logs, "Comando de abrir porta recebido, porta foi aberta")
@@ -64,7 +66,7 @@ def sub_cb(topic, msg):
 
         rele.value(1)
 
-    if topic == mqtt_comandos and msg == b'fechar':
+    if topic == topic_sub and msg == b'fechar':
         print("Comando de fechar porta recebido")
 
         client.publish(mqtt_logs, "Comando de fechar porta recebido, porta foi fechada")
@@ -72,18 +74,11 @@ def sub_cb(topic, msg):
         client.publish(mqtt_estado, "Porta fechada com sucesso.")
 
         rele.value(0)
-    
+
 try:
-    client.connect()
-    client.set_callback(sub_cb)
-    client.subscribe(mqtt_comandos)
-
+    client = connect_and_subscribe()
 except OSError as e:
-    time.sleep(10)
-
-    machine.reset()
-
-client.publish(mqtt_logs, "Porta conectada em " + ssid + " com sucesso, servidor MQTT estabelecido!")
+    restart_and_reconnect()
 
 rele = Pin(2, Pin.OUT)
 
@@ -114,6 +109,13 @@ while True:
     while (cardTag == "SemTag"):
 
         client.check_msg()
+
+        if (time.time() - last_msg) >= message_interval:
+            client.publish(mqtt_heartbeat, "Heartbeat: {}".format(global_contador))
+        
+        last_msg = time.time()
+
+        global_contador += 1
         
         rele.value(0)
             
