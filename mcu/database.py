@@ -48,7 +48,7 @@ class Database:
                 return (True,i)
             
         return (False,i)
-    
+        
     def findName(self, tag):
 
         arq = open("ID.json").read()
