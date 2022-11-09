@@ -24,7 +24,7 @@ mqtt_password = load_config["mqtt_password"]
 
 client_id = ubinascii.hexlify(machine.unique_id())
 
-topic_sub = b"door/comandos"
+topic_sub = bytes(load_config["topic_sub"], 'utf-8')
 
 last_msg = 0
 message_interval = 1
@@ -53,7 +53,7 @@ if not wlan.isconnected():
 
     print("Conectando com o WIFI...")
 
-    wlan.connect(ssid, password)
+    wlan.connect(ssid, ssid_password)
     
     while not wlan.isconnected():
         pass
