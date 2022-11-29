@@ -78,6 +78,17 @@ def sub_cb(topic, msg):
         client.publish(mqtt_estado, "Porta fechada com sucesso.")
 
         rele.value(0)
+    
+    if topic == topic_sub and msg == b'panic':
+        print("Comando de pânico recebido")
+
+        client.publish(mqtt_logs, "Comando de panico recebido, porta foi reiniciada")
+
+        rele.value(0)
+
+        time.sleep(10)
+
+        machine.reset()
 
 try:
     client = connect_and_subscribe()
@@ -170,7 +181,7 @@ while True:
                 
                 db.removeCard(cardTag)
                 
-                time.sleep_ms(3000)
+                time.sleep(3)
                 
                 print("Aproxime um cartao para adicionar ou remover.")
                 
@@ -182,8 +193,8 @@ while True:
                 
                 db.addCard(cardTag, input("Nome do holder "))
                 
-                time.sleep_ms(3000)
-                
+                time.sleep(3)
+                        
                 print("Aproxime um cartao para adicionar ou remover.")
     else:
         
@@ -194,7 +205,7 @@ while True:
             
             client.publish(mqtt_logs, "O modo de configuracao da porta foi habilitado!")
             
-            time.sleep_ms(2000)
+            time.sleep(2)
             
             amount = db.amount()
             
@@ -202,7 +213,7 @@ while True:
             
             client.publish(mqtt_logs, "Atualmente ha " + str(amount) + " cartoes registrados na memoria!")
             
-            time.sleep_ms(1000)
+            time.sleep(2)
             
             print("Leia um cartao para ADICIONAR ou REMOVER da memoria")
             
