@@ -98,31 +98,46 @@ except OSError as e:
 rele = Pin(2, Pin.OUT)
 button = Pin(12, Pin.IN, Pin.PULL_UP)
 
+led_grant = Pin(14, Pin.OUT)
+led_rejected = Pin(27, Pin.OUT)
+led_program = Pin(26, Pin.OUT)
+
 db = db()
 rf = rf()
 
 def grant(delay, name):
     
     rele.value(0)
+    led_grant.value(1)
 
     client.publish(mqtt_nomes, name)
     
     time.sleep(delay)
 
+    led_grant.value(0)
+
 def deny(tag):
+
     rele.value(1)
+    led_rejected.value(1)
     
     client.publish(mqtt_logs, "O cartao de ID " + tag + " tentou entrar porem sem permissao.")
     
     time.sleep(3)
 
+    led_rejected.value(0)
+
 def program():
+
     rele.value(0)
+    led_program.value(1)
     
     client.publish(mqtt_estado, "Porta no modo configuracao com sucesso.")
 
 def normal():
+
     rele.value(1)
+    led_program.value(0)
     
     client.publish(mqtt_estado, "Porta no modo normal com sucesso.")
 
